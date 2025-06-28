@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 from app.utils.response import success, not_found, error
 from app.api.v1.routes import candidates
-
+from app.api.v1.services import candidates_service
 from fastapi import Request
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -23,6 +23,8 @@ api_router.include_router(candidates.router, prefix="/candidates", tags=["candid
 
 # app.mount(PREFIX, api_router)
 app.include_router(api_router, prefix=PREFIX)
+
+candidates_service.init_and_ping()
 
 @app.get("/")
 def get_root():
