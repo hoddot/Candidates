@@ -2,8 +2,11 @@ import uvicorn
 from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
 import os
-from app.utils.response import success
+from app.utils.response import success, not_found, error
 from app.api.v1.routes import candidates
+
+from fastapi import Request
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # โหลดค่าจากไฟล์ .env
 load_dotenv()
@@ -28,6 +31,20 @@ def get_root():
 @app.get("/health")
 def health_check():
     return success("OK")
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return not_found({
+            "status_code": exc.status_code,
+            "message": "The page you requested was not found. URL : " +str(request.url)
+            }
+        )
+    return error({
+        "status_code": exc.status_code,
+        "message": exc.detail
+        }
+    )
 
 if __name__ == "__main__":
     print(f"----- APP START RUNNING ON PORT {PORT} -----")

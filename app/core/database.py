@@ -35,3 +35,4 @@ def get_db():
         raise  # ส่งต่อ exception ออกไป
     finally:
         db.close()
+        

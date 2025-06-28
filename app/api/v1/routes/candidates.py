@@ -7,6 +7,7 @@ from app.utils.response import success, bad_request, not_found, error
 from app.models.candidates import UserRegister, FeedBack, UserStatus, ScheduleInterview
 from fastapi.encoders import jsonable_encoder
 from app.schemas.pagination import PaginationResponse, FirstResponse
+from email_validator import validate_email, EmailNotValidError
 
 router = APIRouter()
 
@@ -22,6 +23,11 @@ async def get_user_all(db: Session = Depends(get_db)):
 @router.post("/", response_model=FirstResponse)
 async def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
     try:
+        try:
+            validate_email(user_data.email)
+        except EmailNotValidError as e:
+            return bad_request(f"Invalid email: {str(e)}")
+        
         created_by="System"
         new_user = candidates_service.register_user(user_data, created_by, db)
 
@@ -101,7 +107,7 @@ def get_user_interviews(id: str, db: Session = Depends(get_db)):
         user = candidates_service.get_user_interviews(id, db)
 
         if user == "User not found":
-            return not_found(f"User with ID {id} not found", user)
+            return not_found(f"User with ID {id} not found in Interviewer", user)
         
         return success(jsonable_encoder(user))
     except Exception as e:
@@ -137,7 +143,7 @@ def get_user_feedback(id: str, db: Session = Depends(get_db)):
         user = candidates_service.get_user_by_id(id, db)
 
         if user == "User not found":
-            return not_found(f"User with ID {id} not found", user)
+            return not_found(f"User with ID {id} not found in Feedback", user)
         
         return success(jsonable_encoder(user))
     except Exception as e:

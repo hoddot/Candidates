@@ -125,7 +125,8 @@ def get_user_by_id(id: str, db: Session):
             .join(User.feedbacks)
             .filter(
                 User.id == id,
-                User.active == 1
+                User.active == 1,
+                Feedback.rating.isnot(None)
             )
             .options(selectinload(User.interviews))
             .options(selectinload(User.feedbacks))
